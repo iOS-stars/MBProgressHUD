@@ -690,9 +690,13 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
             [[UIBezierPath bezierPathWithRoundedRect:boxRect
                                         cornerRadius:radius] addClip];
             
-            CGImageRef cgImage = [contextCI createCGImage:gaussianBlurFilter.outputImage fromRect:[inputImage extent]];
-            CGContextDrawImage(context, boxRect, cgImage);
-            CGImageRelease(cgImage);
+            CIImage *outputImage = gaussianBlurFilter.outputImage;
+            
+            if (outputImage) {
+                CGImageRef cgImage = [contextCI createCGImage:outputImage fromRect:[inputImage extent]];
+                CGContextDrawImage(context, boxRect, cgImage);
+                CGImageRelease(cgImage);
+            }
             
             UIGraphicsEndImageContext();
         }
