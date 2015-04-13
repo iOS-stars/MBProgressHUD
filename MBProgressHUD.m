@@ -681,18 +681,20 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
     
         CIImage *inputImage = [CIImage imageWithCGImage:self.blurredImage.CGImage];
         
-        CIFilter *gaussianBlurFilter = [CIFilter filterWithName: @"CIGaussianBlur"];
-        [gaussianBlurFilter setValue:inputImage forKey: @"inputImage"];
-        [gaussianBlurFilter setValue:@30 forKey:@"inputRadius"];
-        
-        CIContext *contextCI = [CIContext contextWithOptions:nil];
-        [[UIBezierPath bezierPathWithRoundedRect:boxRect
-                                    cornerRadius:radius] addClip];
-
-        CGImageRef cgImage = [contextCI createCGImage:gaussianBlurFilter.outputImage fromRect:[inputImage extent]];
-        CGContextDrawImage(context, boxRect, cgImage);
-        
-        UIGraphicsEndImageContext();
+        if (inputImage) {
+            CIFilter *gaussianBlurFilter = [CIFilter filterWithName: @"CIGaussianBlur"];
+            [gaussianBlurFilter setValue:inputImage forKey: @"inputImage"];
+            [gaussianBlurFilter setValue:@30 forKey:@"inputRadius"];
+            
+            CIContext *contextCI = [CIContext contextWithOptions:nil];
+            [[UIBezierPath bezierPathWithRoundedRect:boxRect
+                                        cornerRadius:radius] addClip];
+            
+            CGImageRef cgImage = [contextCI createCGImage:gaussianBlurFilter.outputImage fromRect:[inputImage extent]];
+            CGContextDrawImage(context, boxRect, cgImage);
+            
+            UIGraphicsEndImageContext();
+        }
         
     } else {
 
