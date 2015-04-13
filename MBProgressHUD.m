@@ -692,6 +692,7 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
             
             CGImageRef cgImage = [contextCI createCGImage:gaussianBlurFilter.outputImage fromRect:[inputImage extent]];
             CGContextDrawImage(context, boxRect, cgImage);
+            CGImageRelease(cgImage);
             
             UIGraphicsEndImageContext();
         }
