@@ -7,6 +7,8 @@
 #import "MBProgressHUD.h"
 #import <tgmath.h>
 
+#import <LBBlurredImage/UIImage+ImageEffects.h>
+
 #if __has_feature(objc_arc)
 	#define MB_AUTORELEASE(exp) exp
 	#define MB_RELEASE(exp) exp
@@ -678,28 +680,18 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	float radius = self.cornerRadius;
     
     if (self.blurred) {
-    
-        CIImage *inputImage = [CIImage imageWithCGImage:self.blurredImage.CGImage];
+
+        UIImageView *blurredBg = [[UIImageView alloc] initWithImage:[self.blurredImage applyBlurWithRadius:20.0f
+                                                                                                 tintColor:nil
+                                                                                     saturationDeltaFactor:1.8f
+                                                                                                 maskImage:nil]];
+        blurredBg.frame = boxRect;
+        blurredBg.layer.cornerRadius = radius;
+        blurredBg.clipsToBounds = YES;
+        blurredBg.alpha = 0.85f;
         
-        if (inputImage) {
-            CIFilter *gaussianBlurFilter = [CIFilter filterWithName: @"CIGaussianBlur"];
-            [gaussianBlurFilter setValue:inputImage forKey: @"inputImage"];
-            [gaussianBlurFilter setValue:@30 forKey:@"inputRadius"];
-            
-            CIContext *contextCI = [CIContext contextWithOptions:nil];
-            [[UIBezierPath bezierPathWithRoundedRect:boxRect
-                                        cornerRadius:radius] addClip];
-            
-            CIImage *outputImage = gaussianBlurFilter.outputImage;
-            
-            if (outputImage) {
-                CGImageRef cgImage = [contextCI createCGImage:outputImage fromRect:[inputImage extent]];
-                CGContextDrawImage(context, boxRect, cgImage);
-                CGImageRelease(cgImage);
-            }
-            
-            UIGraphicsEndImageContext();
-        }
+        [self addSubview:blurredBg];
+        [self sendSubviewToBack:blurredBg];
         
     } else {
 
