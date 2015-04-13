@@ -1,0 +1,17 @@
+PODS:
+  - LBBlurredImage (0.2.2)
+  - MBProgressHUD (0.9):
+    - LBBlurredImage (~> 0.2.2)
+
+DEPENDENCIES:
+  - MBProgressHUD (from `../`)
+
+EXTERNAL SOURCES:
+  MBProgressHUD:
+    :path: ../
+
+SPEC CHECKSUMS:
+  LBBlurredImage: 700634c17922bc2d22343118e7deb6a3ca12db43
+  MBProgressHUD: 1cd3575525c8e8c4fe11c809ac7edc7aea924e92
+
+COCOAPODS: 0.36.1

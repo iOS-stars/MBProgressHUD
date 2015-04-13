@@ -7,7 +7,6 @@
 #import "MBProgressHUD.h"
 #import <tgmath.h>
 
-
 #if __has_feature(objc_arc)
 	#define MB_AUTORELEASE(exp) exp
 	#define MB_RELEASE(exp) exp
@@ -69,6 +68,8 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 @property (atomic, MB_STRONG) NSTimer *graceTimer;
 @property (atomic, MB_STRONG) NSTimer *minShowTimer;
 @property (atomic, MB_STRONG) NSDate *showStarted;
+
+@property (nonatomic, MB_STRONG) UIImage *blurredImage;
 
 
 @end
@@ -611,6 +612,30 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	size = totalSize;
 }
 
+#pragma mark -- blurred rect bg
+
+- (UIImage *)blurredImage {
+
+    if (!_blurredImage) {
+    
+        // Center HUD
+        CGRect allRect = self.bounds;
+        // Draw rounded HUD backgroud rect
+        CGRect boxRect = CGRectMake(round((allRect.size.width - size.width) / 2) + self.xOffset,
+                                    round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
+
+        UIGraphicsBeginImageContextWithOptions(boxRect.size, FALSE, 0.0);
+        [self.superview.layer renderInContext:UIGraphicsGetCurrentContext()];
+        _blurredImage = UIGraphicsGetImageFromCurrentImageContext();
+        
+        UIGraphicsEndImageContext();
+    
+    }
+    
+    return _blurredImage;
+
+}
+
 #pragma mark BG Drawing
 
 - (void)drawRect:(CGRect)rect {
@@ -651,14 +676,36 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	CGRect boxRect = CGRectMake(round((allRect.size.width - size.width) / 2) + self.xOffset,
 								round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
 	float radius = self.cornerRadius;
-	CGContextBeginPath(context);
-	CGContextMoveToPoint(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect));
-	CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMinY(boxRect) + radius, radius, 3 * (float)M_PI / 2, 0, 0);
-	CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMaxY(boxRect) - radius, radius, 0, (float)M_PI / 2, 0);
-	CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMaxY(boxRect) - radius, radius, (float)M_PI / 2, (float)M_PI, 0);
-	CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect) + radius, radius, (float)M_PI, 3 * (float)M_PI / 2, 0);
-	CGContextClosePath(context);
-	CGContextFillPath(context);
+    
+    if (self.blurred) {
+    
+        CIImage *inputImage = [CIImage imageWithCGImage:self.blurredImage.CGImage];
+        
+        CIFilter *gaussianBlurFilter = [CIFilter filterWithName: @"CIGaussianBlur"];
+        [gaussianBlurFilter setValue:inputImage forKey: @"inputImage"];
+        [gaussianBlurFilter setValue:@30 forKey:@"inputRadius"];
+        
+        CIContext *contextCI = [CIContext contextWithOptions:nil];
+        [[UIBezierPath bezierPathWithRoundedRect:boxRect
+                                    cornerRadius:radius] addClip];
+
+        CGImageRef cgImage = [contextCI createCGImage:gaussianBlurFilter.outputImage fromRect:[inputImage extent]];
+        CGContextDrawImage(context, boxRect, cgImage);
+        
+        UIGraphicsEndImageContext();
+        
+    } else {
+
+        CGContextBeginPath(context);
+        CGContextMoveToPoint(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect));
+        CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMinY(boxRect) + radius, radius, 3 * (float)M_PI / 2, 0, 0);
+        CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMaxY(boxRect) - radius, radius, 0, (float)M_PI / 2, 0);
+        CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMaxY(boxRect) - radius, radius, (float)M_PI / 2, (float)M_PI, 0);
+        CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect) + radius, radius, (float)M_PI, 3 * (float)M_PI / 2, 0);
+        CGContextClosePath(context);
+        CGContextFillPath(context);
+
+    }
 
 	UIGraphicsPopContext();
 }

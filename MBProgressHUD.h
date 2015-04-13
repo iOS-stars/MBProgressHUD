@@ -284,6 +284,12 @@ typedef void (^MBProgressHUDCompletionBlock)();
 @property (assign) MBProgressHUDMode mode;
 
 /**
+ *  Apply a blur effect on the background rect
+ */
+@property (assign) BOOL blurred;
+
+
+/**
  * The animation type that should be used when the HUD is shown and hidden. 
  *
  * @see MBProgressHUDAnimation

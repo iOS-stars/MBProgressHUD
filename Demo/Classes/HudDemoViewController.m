@@ -77,6 +77,8 @@
 - (IBAction)showWithLabel:(id)sender {
 	
 	HUD = [[MBProgressHUD alloc] initWithView:self.navigationController.view];
+	HUD.color = [UIColor blueColor];
+	HUD.blurred = YES;
 	[self.navigationController.view addSubview:HUD];
 	
 	HUD.delegate = self;
