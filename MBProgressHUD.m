@@ -685,6 +685,7 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
                                                                                                  tintColor:nil
                                                                                      saturationDeltaFactor:1.8f
                                                                                                  maskImage:nil]];
+        
         blurredBg.frame = boxRect;
         blurredBg.layer.cornerRadius = radius;
         blurredBg.clipsToBounds = YES;
@@ -692,6 +693,8 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
         
         [self addSubview:blurredBg];
         [self sendSubviewToBack:blurredBg];
+
+        
         
     } else {
 
