@@ -690,7 +690,9 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 								round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
 	float radius = self.cornerRadius;
     
-    if (self.blurred && !self.blurredBackground) { //check if blurring background is required, but do not draw it twice is already added
+    if (self.blurred) {
+        
+        [self.blurredBackground removeFromSuperview];
 
         UIImageView *blurredBg = [[UIImageView alloc] initWithImage:[self.blurredImage applyBlurWithRadius:20.0f
                                                                                                  tintColor:nil
