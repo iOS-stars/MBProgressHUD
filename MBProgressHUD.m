@@ -626,9 +626,19 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
         CGRect boxRect = CGRectMake(round((allRect.size.width - size.width) / 2) + self.xOffset,
                                     round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
 
-        UIGraphicsBeginImageContextWithOptions(boxRect.size, FALSE, 0.0);
-        [self.superview.layer renderInContext:UIGraphicsGetCurrentContext()];
-        _blurredImage = UIGraphicsGetImageFromCurrentImageContext();
+        // Create the image context
+        UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, self.window.screen.scale);
+        
+        // There he is! The new API method
+        [self.superview drawViewHierarchyInRect:self.frame afterScreenUpdates:NO];
+        
+        // Get the snapshot
+        UIImage *fullScreen = UIGraphicsGetImageFromCurrentImageContext();
+        CGImageRef imageRef = CGImageCreateWithImageInRect(fullScreen.CGImage, boxRect);
+        
+        _blurredImage = [UIImage imageWithCGImage:imageRef];
+
+        CGImageRelease(imageRef);
         
         UIGraphicsEndImageContext();
     
