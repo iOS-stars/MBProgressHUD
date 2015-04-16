@@ -7,6 +7,7 @@
 #import "MBProgressHUD.h"
 #import <tgmath.h>
 
+#import <LBBlurredImage/UIImage+ImageEffects.h>
 
 #if __has_feature(objc_arc)
 	#define MB_AUTORELEASE(exp) exp
@@ -69,6 +70,8 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 @property (atomic, MB_STRONG) NSTimer *graceTimer;
 @property (atomic, MB_STRONG) NSTimer *minShowTimer;
 @property (atomic, MB_STRONG) NSDate *showStarted;
+
+@property (nonatomic, MB_STRONG) UIImage *blurredImage;
 
 
 @end
@@ -611,6 +614,40 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	size = totalSize;
 }
 
+#pragma mark -- blurred rect bg
+
+- (UIImage *)blurredImage {
+
+    if (!_blurredImage) {
+    
+        // Center HUD
+        CGRect allRect = self.bounds;
+        // Draw rounded HUD backgroud rect
+        CGRect boxRect = CGRectMake(round((allRect.size.width - size.width) / 2) + self.xOffset,
+                                    round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
+
+        // Create the image context
+        UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, self.window.screen.scale);
+        
+        // There he is! The new API method
+        [self.superview drawViewHierarchyInRect:self.frame afterScreenUpdates:NO];
+        
+        // Get the snapshot
+        UIImage *fullScreen = UIGraphicsGetImageFromCurrentImageContext();
+        CGImageRef imageRef = CGImageCreateWithImageInRect(fullScreen.CGImage, boxRect);
+        
+        _blurredImage = [UIImage imageWithCGImage:imageRef];
+
+        CGImageRelease(imageRef);
+        
+        UIGraphicsEndImageContext();
+    
+    }
+    
+    return _blurredImage;
+
+}
+
 #pragma mark BG Drawing
 
 - (void)drawRect:(CGRect)rect {
@@ -651,14 +688,36 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 	CGRect boxRect = CGRectMake(round((allRect.size.width - size.width) / 2) + self.xOffset,
 								round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
 	float radius = self.cornerRadius;
-	CGContextBeginPath(context);
-	CGContextMoveToPoint(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect));
-	CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMinY(boxRect) + radius, radius, 3 * (float)M_PI / 2, 0, 0);
-	CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMaxY(boxRect) - radius, radius, 0, (float)M_PI / 2, 0);
-	CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMaxY(boxRect) - radius, radius, (float)M_PI / 2, (float)M_PI, 0);
-	CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect) + radius, radius, (float)M_PI, 3 * (float)M_PI / 2, 0);
-	CGContextClosePath(context);
-	CGContextFillPath(context);
+    
+    if (self.blurred) {
+
+        UIImageView *blurredBg = [[UIImageView alloc] initWithImage:[self.blurredImage applyBlurWithRadius:20.0f
+                                                                                                 tintColor:nil
+                                                                                     saturationDeltaFactor:1.8f
+                                                                                                 maskImage:nil]];
+        
+        blurredBg.frame = boxRect;
+        blurredBg.layer.cornerRadius = radius;
+        blurredBg.clipsToBounds = YES;
+        blurredBg.alpha = 0.85f;
+        
+        [self addSubview:blurredBg];
+        [self sendSubviewToBack:blurredBg];
+
+        
+        
+    } else {
+
+        CGContextBeginPath(context);
+        CGContextMoveToPoint(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect));
+        CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMinY(boxRect) + radius, radius, 3 * (float)M_PI / 2, 0, 0);
+        CGContextAddArc(context, CGRectGetMaxX(boxRect) - radius, CGRectGetMaxY(boxRect) - radius, radius, 0, (float)M_PI / 2, 0);
+        CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMaxY(boxRect) - radius, radius, (float)M_PI / 2, (float)M_PI, 0);
+        CGContextAddArc(context, CGRectGetMinX(boxRect) + radius, CGRectGetMinY(boxRect) + radius, radius, (float)M_PI, 3 * (float)M_PI / 2, 0);
+        CGContextClosePath(context);
+        CGContextFillPath(context);
+
+    }
 
 	UIGraphicsPopContext();
 }

@@ -1,0 +1,5 @@
+source 'https://github.com/CocoaPods/Specs.git'
+
+target 'HudDemo', :exclusive => true do
+  pod "MBProgressHUD", :path => "../"
+end

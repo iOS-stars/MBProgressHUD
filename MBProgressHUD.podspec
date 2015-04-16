@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/matej/MBProgressHUD.git", :tag => s.version.to_s }
   s.platform     = :ios
   s.source_files = '*.{h,m}'
+  s.dependency 'LBBlurredImage', '~> 0.2.2'
   s.framework    = "CoreGraphics"
   s.requires_arc = true
 end
