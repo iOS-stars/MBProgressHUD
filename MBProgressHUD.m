@@ -72,6 +72,7 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 @property (atomic, MB_STRONG) NSDate *showStarted;
 
 @property (nonatomic, MB_STRONG) UIImage *blurredImage;
+@property (nonatomic, weak) UIImageView *blurredBackground;
 
 
 @end
@@ -689,7 +690,7 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
 								round((allRect.size.height - size.height) / 2) + self.yOffset, size.width, size.height);
 	float radius = self.cornerRadius;
     
-    if (self.blurred) {
+    if (self.blurred && !self.blurredBackground) { //check if blurring background is required, but do not draw it twice is already added
 
         UIImageView *blurredBg = [[UIImageView alloc] initWithImage:[self.blurredImage applyBlurWithRadius:20.0f
                                                                                                  tintColor:nil
@@ -704,7 +705,7 @@ static const CGFloat kDetailsLabelFontSize = 12.f;
         [self addSubview:blurredBg];
         [self sendSubviewToBack:blurredBg];
 
-        
+        self.blurredBackground = blurredBg;
         
     } else {
 
